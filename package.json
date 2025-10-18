@@ -22,8 +22,8 @@
     "fs-extra": "^11.3.2",
     "google-tts-api": "^2.0.2",
     "inquirer": "^12.10.0",
-    "mic": "^2.1.2",
-    "node-record-lpcm16": "^1.0.1",
+    
+    
     "ora": "^9.0.0",
     "play-sound": "^1.1.6",
     "speaker": "^0.5.5",
