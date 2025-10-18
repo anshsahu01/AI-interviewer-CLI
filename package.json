@@ -1,0 +1,36 @@
+{
+  "name": "ai-interviewer",
+  "version": "1.0.0",
+  "description": "Ai intervie CLI",
+  "license": "ISC",
+  "author": "Ansh Sahu",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@deepgram/sdk": "^4.11.2",
+    "@google-cloud/speech": "^7.2.1",
+    "@google-cloud/text-to-speech": "^6.3.1",
+    "@google-cloud/vertexai": "^1.10.0",
+    "@google/generative-ai": "^0.24.1",
+    "@picovoice/pvrecorder-node": "^1.2.8",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.1",
+    "dotenv": "^17.2.3",
+    "fs-extra": "^11.3.2",
+    "google-tts-api": "^2.0.2",
+    "inquirer": "^12.10.0",
+    "mic": "^2.1.2",
+    "node-record-lpcm16": "^1.0.1",
+    "ora": "^9.0.0",
+    "play-sound": "^1.1.6",
+    "speaker": "^0.5.5",
+    "wav": "^1.0.2",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
