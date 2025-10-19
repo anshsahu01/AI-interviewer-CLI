@@ -12,71 +12,74 @@ const generationConfig = {
 };
 
 /**
- * Role ke hisaab se Gemini ko prompt karke agla sawaal generate karta hai.
- * @param {Array<Object>} conversationHistory - [{ role: "user", parts: [{ text: "..." }] }, { role: "model", parts: [{ text: "..." }] }]
- * @param {string} selectedRole - e.g. "MERN Stack Developer", "Backend Developer", "Product Manager"
- * @returns {Promise<string>} - Gemini se generate kiya gaya naya sawaal.
+ * Returns the first question from the question bank directly.
+ * @param {Array<Object>} questionBank
+ * @returns {string}
  */
-export async function getNextQuestion(conversationHistory, selectedRole) {
-  const spinner = ora(chalk.yellow('AI is thinking of the next question...')).start();
+export function getFirstQuestion(questionBank) {
+  return questionBank[0].question;
+}
 
-  // 🎯 Role-based system instruction
-  let systemText = "";
+/**
+ * Based on user's answer, Gemini decides whether to ask a follow-up or move to next question.
+ * @param {string} userAnswer
+ * @param {string} interviewType
+ * @param {Array<Object>} questionBank
+ * @param {number} currentIndex
+ * @returns {Promise<string>}
+ */
+export async function getFollowUpOrNext(userAnswer, interviewType, questionBank, currentIndex) {
+  const spinner = ora(chalk.yellow('🧠 AI is evaluating your answer...')).start();
 
-  switch (selectedRole) {
-    case "MERN Stack Developer":
-      systemText = `You are a senior MERN stack engineer conducting a technical interview.
-      Your goal is to assess the candidate's understanding of React, Node.js, MongoDB, and Express.
-      - Ask only one question at a time.
-      - Keep your questions concise and specific.
-      - Your response should ONLY contain the question text, nothing else.`;
-      break;
+  const remainingQuestions = questionBank.slice(currentIndex + 1);
 
-    case "Backend Developer":
-      systemText = `You are a backend architect conducting a technical interview.
-      Your goal is to assess the candidate's understanding of APIs, databases, scalability, and system design.
-      - Ask only one question at a time.
-      - Keep your questions concise and specific.
-      - Your response should ONLY contain the question text, nothing else.`;
-      break;
+  const prompt = `
+You are a senior interviewer conducting a mock interview for the role: ${interviewType}.
+Here is the candidate’s answer:
+"${userAnswer}"
 
-    case "Product Manager":
-    default:
-      systemText = `You are an expert product manager conducting a product interview.
-      Your goal is to assess the candidate's product sense and problem-solving skills.
-      - Ask only one question at a time.
-      - Keep your questions concise and to the point.
-      - Your response should ONLY contain the question text, nothing else.`;
-      break;
-  }
+If the answer lacks depth or clarity, ask a follow-up question to probe further.
+If the answer is strong and complete, ask the next question from this list:
+${JSON.stringify(remainingQuestions)}
+
+Respond with ONLY the question text, nothing else.
+`;
 
   try {
-    const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction: {
-        role: "system",
-        parts: [{ text: systemText }],
-      }
-    });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const nextQuestion = response.text().trim();
 
-    const chat = model.startChat({
-      history: conversationHistory,
-      generationConfig,
-    });
-
-    const result = await chat.sendMessage("Next question please.");
-    const response = result.response;
-    const nextQuestion = response.text();
-
-    spinner.succeed(chalk.green('AI has a new question.'));
+    spinner.succeed(chalk.green('✅ AI has generated the next question.'));
     return nextQuestion;
 
   } catch (error) {
-    spinner.fail(chalk.red('Error generating next question from LLM.'));
+    spinner.fail(chalk.red('❌ Error generating follow-up or next question.'));
     console.error(error);
-    return "Can you tell me about a time you had to make a difficult decision?";
+    return "Can you elaborate on your previous answer?";
   }
 }
 
+/**
+ * Rephrases the current question for clarity.
+ * @param {string} originalQuestion
+ * @returns {Promise<string>}
+ */
+export async function getClarifiedQuestion(originalQuestion) {
+  const prompt = `
+You are a senior interviewer. Rephrase this question more clearly:
+"${originalQuestion}"
+Respond with ONLY the rephrased question.
+`;
 
-
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text().trim();
+  } catch (error) {
+    console.error("❌ Error clarifying question:", error);
+    return originalQuestion;
+  }
+}

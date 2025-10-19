@@ -1,6 +1,3 @@
-
-
-
 import { PvRecorder } from '@picovoice/pvrecorder-node';
 import { SpeechClient } from '@google-cloud/speech';
 import chalk from 'chalk';
@@ -9,18 +6,32 @@ import { getSpeakingState, setRecordingState } from './state.js';
 
 const SAMPLE_RATE = 16000;
 const FRAME_LENGTH = 512;
-const MAX_DURATION_MS = 2 * 60 * 1000; // duration for each answer
+const MAX_DURATION_MS = 0.5 * 60 * 1000;
 const client = new SpeechClient();
+
+/**
+ * Detects voice command keywords from transcript.
+ * @param {string} transcript
+ * @returns {string|null}
+ */
+function detectVoiceCommand(transcript) {
+  const lower = transcript.toLowerCase();
+  if (lower.includes("clarify")) return "clarify";
+  if (lower.includes("repeat")) return "repeat";
+  if (lower.includes("done")) return "done";
+  return null;
+}
 
 export default async function listenAndTranscribe(turn, sessionDir) {
   if (getSpeakingState()) {
     console.log(chalk.gray("🔇 TTS is speaking, STT paused."));
-    return "";
+    return { transcript: "", command: null };
   }
 
   const spinner = ora(chalk.yellow(`🎙️ Listening for answer ${turn}...`)).start();
   let finalTranscript = "";
   let streamEnded = false;
+  let detectedCommand = null;
   const seenFinals = new Set();
 
   const request = {
@@ -48,6 +59,13 @@ export default async function listenAndTranscribe(turn, sessionDir) {
       if (transcript && result.isFinal && !seenFinals.has(transcript)) {
         finalTranscript += transcript + " ";
         seenFinals.add(transcript);
+
+        const command = detectVoiceCommand(transcript);
+        if (command && !detectedCommand) {
+          detectedCommand = command;
+          streamEnded = true;
+          spinner.text = chalk.gray(`⏸️ Command detected: ${command}`);
+        }
       }
     });
 
@@ -60,7 +78,6 @@ export default async function listenAndTranscribe(turn, sessionDir) {
 
     const startTime = Date.now();
 
-    //  Countdown timer
     const timer = setInterval(() => {
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, MAX_DURATION_MS - elapsed);
@@ -71,7 +88,7 @@ export default async function listenAndTranscribe(turn, sessionDir) {
       spinner.text = `${timeText}\n${transcriptText}`;
     }, 1000);
 
-    while ((Date.now() - startTime) < MAX_DURATION_MS) {
+    while (!streamEnded && (Date.now() - startTime) < MAX_DURATION_MS) {
       const frame = await recorder.read();
       recognizeStream.write(Buffer.from(frame.buffer));
     }
@@ -84,13 +101,15 @@ export default async function listenAndTranscribe(turn, sessionDir) {
     recognizeStream.end();
     recognizeStream.destroy();
 
-    spinner.succeed(chalk.green("🧑 You: ") + chalk.white(finalTranscript.trim() || "[No speech detected]"));
+    const cleanTranscript = finalTranscript.trim();
+    spinner.succeed(chalk.green("🧑 You: ") + chalk.white(cleanTranscript || "[No speech detected]"));
     setRecordingState(false);
-    return finalTranscript.trim();
+
+    return { transcript: cleanTranscript, command: detectedCommand };
 
   } catch (err) {
     spinner.fail("❌ PvRecorder error");
     setRecordingState(false);
-    return "[Mic error]";
+    return { transcript: "[Mic error]", command: null };
   }
 }

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "question": "How would you measure the success of Twitter's Retweet feature as a product manager? Outline your approach and key metrics.",
+    "tags": ["product metrics", "success criteria", "PM mindset"]
+  },
+  {
+    "id": 2,
+    "question": "What metrics would you use to assess whether users are discovering and using the Retweet feature as intended?",
+    "tags": ["feature adoption", "usability", "discoverability"]
+  },
+  {
+    "id": 3,
+    "question": "How would you track the growth of the Retweet feature over time, and what would indicate success?",
+    "tags": ["growth metrics", "trends", "feature usage"]
+  },
+  {
+    "id": 4,
+    "question": "What data would you analyze to understand what drives Retweet usage, such as by content type or user segment?",
+    "tags": ["segmentation", "data analysis", "drivers"]
+  },
+  {
+    "id": 5,
+    "question": "How would you measure if the Retweet feature is increasing overall user engagement on the platform?",
+    "tags": ["engagement", "user interaction", "KPIs"]
+  },
+  {
+    "id": 6,
+    "question": "What metrics would you use to evaluate the Retweet feature’s impact on Twitter’s value to advertisers?",
+    "tags": ["monetization", "ad metrics", "business impact"]
+  },
+  {
+    "id": 7,
+    "question": "If you notice a decline in Retweets per user, what steps would you take to diagnose the issue?",
+    "tags": ["root cause analysis", "troubleshooting", "problem-solving"]
+  },
+  {
+    "id": 8,
+    "question": "How would you design an experiment to test if a new change to the Retweet feature improves its usage or engagement?",
+    "tags": ["experimentation", "A/B testing", "validation"]
+  }
+]

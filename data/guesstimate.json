@@ -1,0 +1,42 @@
+[
+{
+"id": 1,
+"question": "Estimate the total amount of data consumed by Netflix users worldwide in a single day. Walk me through your approach and assumptions.",
+"tags": ["guesstimate", "overall estimation", "PM mindset"]
+},
+{
+"id": 2,
+"question": "What key assumptions would you make about the number of Netflix subscribers globally, and how would you justify them?",
+"tags": ["assumptions", "market size", "research"]
+},
+{
+"id": 3,
+"question": "How would you estimate the average daily viewing time per subscriber?",
+"tags": ["user behavior", "averages", "segmentation"]
+},
+{
+"id": 4,
+"question": "What factors influence data consumption per hour of Netflix streaming, and how would you account for different video qualities?",
+"tags": ["data rates", "quality tiers", "technical knowledge"]
+},
+{
+"id": 5,
+"question": "How would you break down the user base into segments, like SD vs. HD viewers, and why?",
+"tags": ["segmentation", "user diversity", "prioritization"]
+},
+{
+"id": 6,
+"question": "Walk through the calculation for data consumption by one segment (e.g., SD users) and explain the math step-by-step.",
+"tags": ["calculation", "math basics", "clarity"]
+},
+{
+"id": 7,
+"question": "What potential sources of error or sensitivities could affect your final estimate, and how would you refine it?",
+"tags": ["sensitivities", "validation", "iteration"]
+},
+{
+"id": 8,
+"question": "If the estimate is around 800 million GB, what business insights or follow-up questions might this reveal for Netflix?",
+"tags": ["insights", "implications", "strategic thinking"]
+}
+]

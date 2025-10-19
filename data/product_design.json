@@ -1,0 +1,42 @@
+[
+{
+"id": 1,
+"question": "How would you design an accessible version of Google Home Mini specifically for blind users? Outline your overall approach as a product manager.",
+"tags": ["product design", "accessibility", "PM mindset"]
+},
+{
+"id": 2,
+"question": "What clarifying questions would you ask to better understand the needs of blind users and the scope of the design project?",
+"tags": ["clarification", "user needs", "scope"]
+},
+{
+"id": 3,
+"question": "How would you define the core problem statement for making Google Home Mini accessible to blind individuals?",
+"tags": ["problem statement", "pain points", "empathy"]
+},
+{
+"id": 4,
+"question": "Create a simple user persona for a blind user who would use Google Home Mini for daily tasks.",
+"tags": ["persona", "user research", "demographics"]
+},
+{
+"id": 5,
+"question": "What key goals and success metrics would you set for this accessible Google Home Mini design?",
+"tags": ["goals", "metrics", "KPIs"]
+},
+{
+"id": 6,
+"question": "Brainstorm 3-4 key features to improve accessibility for blind users in the Google Home Mini.",
+"tags": ["features", "brainstorming", "innovation"]
+},
+{
+"id": 7,
+"question": "How would you prioritize features for the accessible Google Home Mini design?",
+"tags": ["prioritization", "frameworks", "trade-offs"]
+},
+{
+"id": 8,
+"question": "What potential trade-offs or challenges would you consider when designing this product for blind users?",
+"tags": ["trade-offs", "feasibility", "implementation"]
+}
+]

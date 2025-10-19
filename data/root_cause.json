@@ -1,0 +1,42 @@
+[
+{
+"id": 1,
+"question": "Urban Company’s service completion rate for repair services in Bengaluru has dropped by 18%. How would you approach investigating and addressing this issue as a product manager?",
+"tags": ["problem statement", "overall approach", "PM mindset"]
+},
+{
+"id": 2,
+"question": "What clarifying questions would you ask about the service completion rate metric and the 18% drop?",
+"tags": ["clarification", "metrics", "communication"]
+},
+{
+"id": 3,
+"question": "How is service completion rate calculated, and why might cancellations impact it?",
+"tags": ["metrics definition", "calculation", "basics"]
+},
+{
+"id": 4,
+"question": "What potential root causes could explain the sudden drop in repair service completions?",
+"tags": ["root cause analysis", "hypotheses", "brainstorming"]
+},
+{
+"id": 5,
+"question": "How would you prioritize different factors to investigate for the completion rate drop?",
+"tags": ["prioritization", "frameworks", "impact"]
+},
+{
+"id": 6,
+"question": "What additional metrics would you track alongside service completion rate?",
+"tags": ["KPIs", "measurement", "trends"]
+},
+{
+"id": 7,
+"question": "Suggest simple ways to segment the data to understand the drop better, like by user type or service sub-category.",
+"tags": ["segmentation", "data analysis", "user focus"]
+},
+{
+"id": 8,
+"question": "What quick experiments or short-term fixes would you propose to improve the service completion rate?",
+"tags": ["experiments", "solutions", "validation"]
+}
+]

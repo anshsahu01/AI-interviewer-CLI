@@ -1,7 +1,3 @@
-
-
-
-
 import 'dotenv/config';
 import { Command } from "commander";
 import fs from 'fs-extra';
@@ -9,17 +5,26 @@ import path from 'path';
 import chalk from 'chalk';
 import readline from 'readline';
 import inquirer from 'inquirer';
-import { setRecordingState, getRecordingState } from './utils/state.js';
 
+import { setRecordingState, getRecordingState } from './utils/state.js';
 import speakQuestion, { getAudioState } from './utils/tts.js';
 import listenAndTranscribe from './utils/stt.js';
-import { getNextQuestion } from './utils/geminiApi.js';
+import {
+  getFirstQuestion,
+  getFollowUpOrNext,
+  getClarifiedQuestion
+} from './utils/geminiApi.js';
 import { getInterviewSummary } from './utils/geminiSummary.js';
+import { loadQuestionBank } from './utils/questionLoader.js';
 
 const program = new Command();
-const INTERVIEW_LENGTH = 1;
-
+const INTERVIEW_LENGTH = 3;
 let isRecording = false;
+
+function showAndSpeak(question) {
+  console.log(chalk.yellow('AI: ') + chalk.white(question));
+  return speakQuestion(question);
+}
 
 program
   .name("ai-interviewer")
@@ -29,13 +34,19 @@ program
 program.command("start").action(async () => {
   console.log(chalk.bold.magenta("🎤 AI Interviewer Started!\n"));
 
-  // 📋 Instructions
   console.log(chalk.bold.blue("📋 Instructions:"));
-  console.log(chalk.white("- You will be asked 5 questions."));
-  console.log(chalk.white("- You’ll have 2 minutes to answer each."));
-  console.log(chalk.white("- Your responses will be transcribed and saved."));
-  console.log(chalk.white("- At the end, Gemini will evaluate your performance.\n"));
-  console.log(chalk.green("👉 Press ENTER to continue to role selection..."));
+  console.log(chalk.white("- You will be asked 3 questions based on your selected interview type."));
+  console.log(chalk.white("- Each question will be spoken aloud. You’ll have 2 minutes to answer."));
+  console.log(chalk.white("- Your voice will be transcribed and saved automatically."));
+  console.log(chalk.white("- During your answer, you can say:"));
+  console.log(chalk.white("   • 'clarify' → AI will rephrase the question"));
+  console.log(chalk.white("   • 'repeat' → AI will replay the question"));
+  console.log(chalk.white("   • 'done' → End your answer early and move on"));
+  console.log(chalk.white("- After the interview, Gemini will evaluate your performance with:"));
+  console.log(chalk.white("   • A score out of 10"));
+  console.log(chalk.white("   • Strengths and improvement suggestions"));
+  console.log(chalk.white("- All logs and audio files will be saved locally for review.\n"));
+  console.log(chalk.green("👉 Press ENTER to continue to interview type selection..."));
 
   await new Promise((resolve) => {
     readline.createInterface({
@@ -44,23 +55,24 @@ program.command("start").action(async () => {
     }).question('', () => resolve());
   });
 
-  // 🧠 Role Selection
-  const { selectedRole } = await inquirer.prompt([
+  const { interviewType } = await inquirer.prompt([
     {
       type: 'list',
-      name: 'selectedRole',
-      message: chalk.yellow("🧠 Choose your interview role:"),
+      name: 'interviewType',
+      message: chalk.yellow("🧠 Choose your interview type:"),
       choices: [
-        "MERN Stack Developer",
-        "Backend Developer",
-        "Product Manager"
+        "Product Design",
+        "Product Improvement",
+        "Product Metrics",
+        "Root Cause",
+        "Guesstimate"
       ]
     }
   ]);
 
-  console.log(chalk.green(`\n✅ Role selected:`), chalk.white(selectedRole));
+  console.log(chalk.green(`\n✅ Interview type selected:`), chalk.white(interviewType));
 
-  // 📁 Session folder
+  const questionBank = loadQuestionBank(interviewType);
   const sessionTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const sessionDir = path.join('./logs', sessionTimestamp);
   fs.ensureDirSync(sessionDir);
@@ -68,28 +80,35 @@ program.command("start").action(async () => {
 
   let conversationHistory = [];
   const loggedConversation = [];
-
-  // 🧠 First question from Gemini
-  let currentQuestion = await getNextQuestion(conversationHistory, selectedRole);
+  let currentIndex = 0;
+  let currentQuestion = getFirstQuestion(questionBank);
 
   for (let i = 0; i < INTERVIEW_LENGTH; i++) {
     console.log(chalk.cyan(`\n--- Question ${i + 1} of ${INTERVIEW_LENGTH} ---`));
-    console.log(chalk.yellow('AI: ') + chalk.white(currentQuestion));
 
     while (isRecording) {
       await new Promise(res => setTimeout(res, 200));
     }
 
-    await speakQuestion(currentQuestion);
+    try {
+      await showAndSpeak(currentQuestion);
+    } catch (err) {
+      console.error(chalk.red("❌ Error in TTS playback:"), err);
+      console.log(chalk.gray("⚠️ Could not play audio. Please read the question above."));
+    }
 
     while (getAudioState()) {
       await new Promise(res => setTimeout(res, 200));
     }
 
     let answer = "";
+    let command = null;
+
     try {
       isRecording = true;
-      answer = await listenAndTranscribe(i + 1, sessionDir);
+      const result = await listenAndTranscribe(i + 1, sessionDir);
+      answer = result.transcript;
+      command = result.command;
     } catch (err) {
       console.error(chalk.red("❌ STT failed:"), JSON.stringify(err, null, 2));
       answer = "[Transcription failed]";
@@ -97,7 +116,37 @@ program.command("start").action(async () => {
       isRecording = false;
     }
 
-    loggedConversation.push({ question: currentQuestion, answer, role: selectedRole });
+    // 🧠 Process voice command
+    if (command === "clarify") {
+      console.log(chalk.gray("🔁 Clarify command detected. Rephrasing..."));
+      currentQuestion = await getClarifiedQuestion(currentQuestion);
+      try {
+        await showAndSpeak(currentQuestion);
+      } catch (err) {
+        console.error(chalk.red("❌ Error in TTS playback:"), err);
+        console.log(chalk.gray("⚠️ Could not play audio. Please read the question above."));
+      }
+      i--; // Re-ask same question
+      continue;
+    }
+
+    if (command === "repeat") {
+      console.log(chalk.gray("🔁 Repeat command detected. Replaying..."));
+      try {
+        await showAndSpeak(currentQuestion);
+      } catch (err) {
+        console.error(chalk.red("❌ Error in TTS playback:"), err);
+        console.log(chalk.gray("⚠️ Could not play audio. Please read the question above."));
+      }
+      i--; // Re-ask same question
+      continue;
+    }
+
+    if (command === "done") {
+      console.log(chalk.gray("⏭️ Done command detected. Skipping to next..."));
+    }
+
+    loggedConversation.push({ question: currentQuestion, answer, interviewType });
     conversationHistory.push(
       { role: "model", parts: [{ text: currentQuestion }] },
       { role: "user", parts: [{ text: answer }] }
@@ -106,7 +155,8 @@ program.command("start").action(async () => {
     fs.writeJsonSync(path.join(sessionDir, 'conversation.json'), loggedConversation, { spaces: 2 });
 
     if (i < INTERVIEW_LENGTH - 1) {
-      currentQuestion = await getNextQuestion(conversationHistory, selectedRole);
+      currentQuestion = await getFollowUpOrNext(answer, interviewType, questionBank, currentIndex);
+      currentIndex++;
     }
   }
 
@@ -114,11 +164,9 @@ program.command("start").action(async () => {
   console.log(chalk.blue(`Check the full log at: ${path.join(sessionDir, 'conversation.json')}`));
   console.log(chalk.blue(`Your audio answers are saved as .wav files in the same directory.`));
 
-  // 📊 Gemini Evaluation
-  const summary = await getInterviewSummary(sessionDir, selectedRole);
+  const summary = await getInterviewSummary(sessionDir, interviewType);
   console.log(chalk.bold.magenta("\n📊 Interview Summary:\n"));
 
-  // 🧠 Format Gemini output
   const lines = summary.split('\n');
   for (let line of lines) {
     line = line.trim();

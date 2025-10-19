@@ -1,0 +1,42 @@
+[
+{
+"id": 1,
+"question": "How would you improve Instagram Reels as a product manager? Walk through your overall approach, including goals and key areas of focus.",
+"tags": ["product improvement", "overall strategy", "PM mindset"]
+},
+{
+"id": 2,
+"question": "What clarifying questions would you ask to understand user feedback and pain points with Instagram Reels?",
+"tags": ["clarification", "user insights", "research"]
+},
+{
+"id": 3,
+"question": "How would you define specific goals for improving Reels, such as increasing user engagement or content creation?",
+"tags": ["goals", "objectives", "metrics"]
+},
+{
+"id": 4,
+"question": "Identify 2-3 key user segments for Reels (e.g., content creators, viewers) and their primary needs.",
+"tags": ["user segments", "personas", "empathy"]
+},
+{
+"id": 5,
+"question": "What are some common pain points for creators and viewers on Instagram Reels, based on typical user feedback?",
+"tags": ["pain points", "problem identification", "user experience"]
+},
+{
+"id": 6,
+"question": "How would you prioritize improvements for Reels, such as better discovery or creator tools, using a simple framework?",
+"tags": ["prioritization", "frameworks", "trade-offs"]
+},
+{
+"id": 7,
+"question": "Brainstorm 3-4 feature ideas to address pain points in Reels, like enhanced analytics for creators or personalized feeds for viewers.",
+"tags": ["features", "brainstorming", "innovation"]
+},
+{
+"id": 8,
+"question": "What experiments would you run to validate improvements to Instagram Reels, and how would you measure their success?",
+"tags": ["experiments", "A/B testing", "validation"]
+}
+]
